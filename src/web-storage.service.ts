@@ -17,9 +17,8 @@ export class WebStorageService {
     this.init();
   }
 
-  addDefaultProviders() {
-    this.addProvider(localStorageProviderName, new LocalStorageProvider());
-    this.addProvider(sessionStorageProviderName, new SessionStorageProvider());
+  get length(): number {
+    return this.keys().length;
   }
 
   addProvider(name: string, value: StorageProvider) {
@@ -31,12 +30,8 @@ export class WebStorageService {
   }
 
   setup(config: WebStorageConfig) {
-    utils.defaults(this.config, config);
+    this.config = utils.merge(this.config, config);
     this.init();
-  }
-
-  get length(): number {
-    return this.keys().length;
   }
 
   @addPrefixToKey
@@ -87,7 +82,17 @@ export class WebStorageService {
   keys(): string[] {
     const keys = [];
 
-    return this.forEach((item: any, key: string) => {keys.push(this.extractKey(key))}), keys;
+    return this.forEach((item: any, key: string) => {keys.push(key)}), keys;
+  }
+
+  getAll(): StorageDictionary {
+    const all: StorageDictionary = {};
+
+    this.forEach((item: any, key: string) => {
+      all[key] = item;
+    });
+
+    return all;
   }
 
   private init(): void {
@@ -95,6 +100,11 @@ export class WebStorageService {
       (storage) => console.log('storage init'),
       (err) => console.error(err) /*TODO emit error*/
     );
+  }
+
+  private addDefaultProviders() {
+    this.addProvider(localStorageProviderName, new LocalStorageProvider());
+    this.addProvider(sessionStorageProviderName, new SessionStorageProvider());
   }
 
   private prefixKey(str: string): string {
@@ -112,4 +122,8 @@ function addPrefixToKey(target: Object, key: string, value: any) {
       return value.value.call(this, this.prefixKey(key), ...args);
     }
   }
+}
+
+export interface StorageDictionary {
+  [index: string]: any;
 }
