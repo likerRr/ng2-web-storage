@@ -2,7 +2,6 @@ import { ReflectiveInjector } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
 import {WebStorageService} from './web-storage.service';
-import {WebStorageValidator} from './web-storage.validator';
 import {WEB_STORAGE_SERVICE_CONFIG, webStorageConfigDefault} from './web-storage.config';
 
 describe('WebStorage Service', () => {
@@ -10,15 +9,17 @@ describe('WebStorage Service', () => {
     testKey = 'key',
     testVal = 'val';
 
-  beforeEach(() => {
+  // beforeEach(() => {
     let injector = ReflectiveInjector.resolveAndCreate([
       WebStorageService,
-      WebStorageValidator,
       {provide: WEB_STORAGE_SERVICE_CONFIG, useValue: webStorageConfigDefault}
     ]);
 
     storage = injector.get(WebStorageService);
-  });
+  // });
+
+  // storage.addProvider('name', instance);
+  // storage.useProvider('name', useValue);
 
   it(`should be 'null' when trying to get the key that doesn't exists`, () => {
     expect(storage.get(testKey)).toBeNull();

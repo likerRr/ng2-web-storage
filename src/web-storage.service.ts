@@ -1,15 +1,33 @@
 import {Injectable, Inject} from '@angular/core';
 import {utils} from './utils';
 import {WebStorage} from './web-storage';
-import {WebStorageValidator} from './web-storage.validator';
 import {WEB_STORAGE_SERVICE_CONFIG, WebStorageConfig} from './web-storage.config';
+import {LocalStorageProvider, localStorageProviderName} from './provider/default/local-storage-provider';
+import {StorageProvider} from './provider/storage-provider';
+import {SessionStorageProvider, sessionStorageProviderName} from './provider/default/session-storage-provider';
+import {Observable} from 'rxjs';
 
 @Injectable()
 export class WebStorageService {
   private storage: WebStorage;
+  private providers: {[index: string]: StorageProvider} = {};
 
-  constructor(@Inject(WEB_STORAGE_SERVICE_CONFIG) private config: WebStorageConfig, private validator: WebStorageValidator) {
+  constructor(@Inject(WEB_STORAGE_SERVICE_CONFIG) private config: WebStorageConfig) {
+    this.addDefaultProviders();
     this.init();
+  }
+
+  addDefaultProviders() {
+    this.addProvider(localStorageProviderName, new LocalStorageProvider());
+    this.addProvider(sessionStorageProviderName, new SessionStorageProvider());
+  }
+
+  addProvider(name: string, value: StorageProvider) {
+    this.providers[name] = value;
+  }
+
+  useProvider(providerName: string): Observable<WebStorage> {
+    return this.providers[providerName].validate().map(storage => this.storage = storage);
   }
 
   setup(config: WebStorageConfig) {
@@ -73,20 +91,10 @@ export class WebStorageService {
   }
 
   private init(): void {
-    this.validator.isAvailable(this.config.storageProvider);
-    this.storage = this.getStorageInstance();
-  }
-
-  private getStorageInstance(): WebStorage {
-    if (this.config.storageProvider === 'localStorage') {
-      return <WebStorage>window.localStorage;
-    }
-
-    if (this.config.storageProvider === 'sessionStorage') {
-      return <WebStorage>window.sessionStorage;
-    }
-
-    throw new TypeError('Unknown storage provider');
+    this.useProvider(this.config.provider).subscribe(
+      (storage) => console.log('storage init'),
+      (err) => console.error(err) /*TODO emit error*/
+    );
   }
 
   private prefixKey(str: string): string {

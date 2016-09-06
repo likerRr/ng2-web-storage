@@ -4,8 +4,7 @@
   "main": "index.js",
   "scripts": {
     "flow.clean": "node node_modules/del-cli/cli typings \"src/**/*.+(js|d.ts|js.map)\" \"index.+(js|d.ts|js.map)\"",
-    "flow.install:typings": "typings install",
-    "flow.compile": "npm run flow.install:typings && npm run flow.compile:common",
+    "flow.compile": "npm run flow.compile:common",
     "flow.compile:common": "tsc -p tsconfig.json",
     "dev.compile": "npm run flow.clean && npm run flow.compile && npm pack",
     "test": "karma start",
@@ -28,6 +27,7 @@
     "jasmine-core": "^2.4.1",
     "karma": "^1.2.0",
     "karma-chrome-launcher": "^2.0.0",
+    "karma-coverage": "^1.1.1",
     "karma-jasmine": "^1.0.2",
     "karma-mocha-reporter": "^2.1.0",
     "karma-webpack": "1.8.0",
