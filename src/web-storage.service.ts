@@ -1,14 +1,16 @@
-import {Injectable, Inject} from '@angular/core';
+import {Injectable, Inject, EventEmitter} from '@angular/core';
 import {utils} from './utils';
 import {WebStorage} from './web-storage';
 import {WEB_STORAGE_SERVICE_CONFIG, WebStorageConfig} from './web-storage.config';
 import {LocalStorageProvider, localStorageProviderName} from './provider/default/local-storage-provider';
 import {StorageProvider} from './provider/storage-provider';
 import {SessionStorageProvider, sessionStorageProviderName} from './provider/default/session-storage-provider';
-import {Observable} from 'rxjs';
+import {Observable, ReplaySubject} from 'rxjs';
 
 @Injectable()
 export class WebStorageService {
+  onError: ReplaySubject<string> = new ReplaySubject<string>(1);
+
   private storage: WebStorage;
   private providers: {[index: string]: StorageProvider} = {};
 
@@ -25,7 +27,15 @@ export class WebStorageService {
     this.providers[name] = value;
   }
 
-  useProvider(providerName: string): Observable<WebStorage> {
+  useProvider(providerName: string): void {
+    this.validateProvider(providerName).subscribe(utils.noop, err => this.onError.next(err));
+  }
+
+  private validateProvider(providerName: string): Observable<WebStorage> {
+    if (!this.providers[providerName]) {
+      return Observable.throw(`Unknown provider`); // TODO change to error constants
+    }
+
     return this.providers[providerName].validate().map(storage => this.storage = storage);
   }
 
@@ -96,10 +106,7 @@ export class WebStorageService {
   }
 
   private init(): void {
-    this.useProvider(this.config.provider).subscribe(
-      (storage) => console.log('storage init'),
-      (err) => console.error(err) /*TODO emit error*/
-    );
+    this.useProvider(this.config.provider);
   }
 
   private addDefaultProviders() {

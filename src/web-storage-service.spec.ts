@@ -1,8 +1,7 @@
-import { Observable } from 'rxjs/Observable';
-
 import {WebStorageService} from './web-storage.service';
 import {WEB_STORAGE_SERVICE_CONFIG, webStorageConfigDefault} from './web-storage.config';
-import {TestBed, inject} from '@angular/core/testing';
+import {TestBed, inject, async} from '@angular/core/testing';
+import {ReplaySubject} from 'rxjs';
 
 describe('WebStorage Service', () => {
   let testKey = 'key',
@@ -103,4 +102,23 @@ describe('WebStorage Service', () => {
     })
   );
 
+});
+
+describe('WebStorage Service event', () => {
+  beforeEach(() => TestBed.configureTestingModule({
+    providers: [
+      WebStorageService,
+      {provide: WEB_STORAGE_SERVICE_CONFIG, useValue: webStorageConfigDefault}
+    ]
+  }));
+
+  it(`'onError' executes if config is wrong`,
+    async(inject([WebStorageService], (storage: WebStorageService) => {
+      expect(storage.onError).toEqual(jasmine.any(ReplaySubject));
+
+      storage.useProvider('unknown_provider');
+
+      storage.onError.subscribe((val) => expect(val).toBe(`Unknown provider`));
+    }))
+  );
 });

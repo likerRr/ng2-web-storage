@@ -5,7 +5,7 @@ export const utils = {
    * @param {U} obj
    * @returns {T} new reference-free merged object
    */
-  merge: <T, U extends T>(defaults: T, obj: U): T => {
+  merge<T, U extends T>(defaults: T, obj: U): T {
     let merged: T = Object.assign({}, defaults);
 
     for (let val in merged) {
@@ -15,5 +15,6 @@ export const utils = {
     }
 
     return merged;
-  }
+  },
+  noop() {}
 };
